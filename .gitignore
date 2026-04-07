@@ -1,0 +1,14 @@
+# Dependencias (NUNCA subirlas)
+node_modules/
+
+# Logs y errores
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de configuración local o entorno
+.env
+.DS_Store
+
+# Cobertura de tests
+coverage/
