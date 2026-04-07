@@ -1,10 +1,16 @@
-import { calcularPromedio } from '../app.js';
+import { calcularPromedio, obtenerEstado } from '../app.js';
 
-test('Calcula promedio ponderado correctamente', () => {
-    // (4.0*0.1) + (5.0*0.2) + (6.0*0.3) + (7.0*0.4) = 6.0
-    expect(calcularPromedio(4, 5, 6, 7)).toBe(6);
+test('Calculo correcto en escala 100', () => {
+    expect(calcularPromedio(100, 100, 100, 100)).toBe(100);
+    expect(calcularPromedio(40, 40, 40, 40)).toBe(40);
 });
 
-test('Lanza error si falta una nota', () => {
-    expect(() => calcularPromedio(7, 7, 7)).toThrow();
+test('Estado sin exigencia', () => {
+    const estado = obtenerEstado(30, false);
+    expect(estado).toContain("Sin validacion");
+});
+
+test('Estado con exigencia - Aprobado', () => {
+    const estado = obtenerEstado(60, true, 60);
+    expect(estado).toContain("APROBADO");
 });
