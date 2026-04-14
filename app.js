@@ -12,7 +12,7 @@ export function obtenerEstado(promedio, aplicarExigencia, nivelExigencia = 60) {
         return "Promedio calculado (Sin validacion de aprobacion)";
     }
 
-    const notaAprobacion = 40;
+    const notaAprobacion = 51;
 
     if (promedio >= notaAprobacion) {
         return "APROBADO (Exigencia aplicada: " + nivelExigencia + "%)";
