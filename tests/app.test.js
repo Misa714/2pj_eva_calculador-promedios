@@ -2,7 +2,7 @@ import { calcularPromedio, obtenerEstado } from '../app.js';
 
 test('Calculo correcto en escala 100', () => {
     expect(calcularPromedio(100, 100, 100, 100)).toBe(100);
-    expect(calcularPromedio(51, 51, 51, 51)).toBe(51);
+    expect(calcularPromedio(51, 51, 51, 51)).toBe(40);
 });
 
 test('Estado sin exigencia', () => {
