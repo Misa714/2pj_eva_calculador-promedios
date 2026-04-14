@@ -20,4 +20,4 @@ test('Estado con exigencia - Reprobado', () => {
     expect(estado).toContain("REPROBADO");
 });
 
-;;
+;
