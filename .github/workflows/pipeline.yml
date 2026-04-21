@@ -1,14 +1,31 @@
 name: CI Calculador Promedios
+
 on: [push]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout del codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - run: npm install
-      - run: npx eslint .
-      - run: npm test
-      - run: echo "Despliegue de Promedios Exitoso"
+          node-version: '18'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Auditoria de Seguridad (DevSecOps)
+        # Este comando devolvera un error si encuentra vulnerabilidades High
+        run: npm audit --audit-level=high
+
+      - name: Validar codigo (Lint)
+        run: npx eslint .
+
+      - name: Ejecutar Pruebas
+        run: npm test
+
+      - name: Despliegue
+        run: echo "Despliegue de Promedios Seguro y Exitoso"
