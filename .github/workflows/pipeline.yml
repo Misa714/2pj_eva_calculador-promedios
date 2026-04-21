@@ -1,4 +1,4 @@
-name: CI Calculador Promedios UNACH
+name: CI Calculador Promedios
 on: [push]
 jobs:
   build:
