@@ -31,7 +31,7 @@ jobs:
         run: chmod +x ./node_modules/.bin/jest
 
       - name: Hacer Lint en el Codigo
-        run: npx eslint . -f compact
+        run: npx eslint
 
       - name: Test de Aplicacion
         run: npm test
