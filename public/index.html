@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Promedio</title>
+</head>
+
+<body>
+    <h1>Calculadora de Promedio Ponderado</h1>
+    <form id="formulario">
+        <label>Nota 1 (10%): <input type="number" id="nota1" min="0" max="100" value="0"></label><br>
+        <label>Nota 2 (20%): <input type="number" id="nota2" min="0" max="100" value="0"></label><br>
+        <label>Nota 3 (30%): <input type="number" id="nota3" min="0" max="100" value="0"></label><br>
+        <label>Nota 4 (40%): <input type="number" id="nota4" min="0" max="100" value="0"></label><br><br>
+        <button type="button" id="calcular">Calcular promedio</button>
+    </form>
+    <h2>Promedio final: <span id="resultado"></span></h2>
+
+    <script>
+        document.getElementById('calcular').addEventListener('click', () => {
+            // 1. Capturar las notas de la interfaz
+            const n1 = parseFloat(document.getElementById('nota1').value) || 0;
+            const n2 = parseFloat(document.getElementById('nota2').value) || 0;
+            const n3 = parseFloat(document.getElementById('nota3').value) || 0;
+            const n4 = parseFloat(document.getElementById('nota4').value) || 0;
+
+            // 2. Realizar el cálculo ponderado (10%, 20%, 30%, 40%)
+            const promedio = (n1 * 0.1) + (n2 * 0.2) + (n3 * 0.3) + (n4 * 0.4);
+
+            // 3. Evaluar el estado de aprobación (Escala UnACh >= 51)
+            let estado = "";
+            if (promedio >= 51) {
+                estado = " - APROBADO ✅";
+            } else {
+                estado = " - REPROBADO ❌";
+            }
+
+            // 4. Mostrar el resultado final en la pantalla
+            document.getElementById('resultado').innerText = promedio.toFixed(1) + estado;
+        });
+    </script>
+</body>
+
+</html>
