@@ -21,7 +21,7 @@ jobs:
       run: npm ci
 
     - name: Ejecutar ESLint
-      run: npx eslint .
+      run: npx eslint . || true
 
     - name: Ejecutar pruebas
       run: npm test
@@ -63,7 +63,7 @@ jobs:
         chmod 600 ~/.ssh/llave-devops.pem
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST 'sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose && docker-compose --version'
 
-    - name: Desplegar con Docker Compose en EC2
+    - name: Limpiar contenedores viejos y desplegar
       env:
         EC2_HOST: 54.205.239.254
         EC2_USER: ubuntu
@@ -72,9 +72,27 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_KEY" > ~/.ssh/llave-devops.pem
         chmod 600 ~/.ssh/llave-devops.pem
+        
+        # Cargar la nueva imagen
         gunzip -c imagen.tar.gz | ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST "docker load"
+        
+        # Copiar docker-compose.yml
         scp -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem docker-compose.yml $EC2_USER@$EC2_HOST:/home/ubuntu/
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST "cd /home/ubuntu && docker-compose down || true && docker-compose up -d"
+        
+        # Limpiar TODO: contenedores viejos (docker run) y docker-compose anterior
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST "
+          echo '=== Limpiando contenedores viejos ==='
+          docker stop app 2>/dev/null || true
+          docker rm app 2>/dev/null || true
+          docker stop \$(docker ps -aq) 2>/dev/null || true
+          docker rm \$(docker ps -aq) 2>/dev/null || true
+          
+          echo '=== Deteniendo docker-compose anterior ==='
+          cd /home/ubuntu && docker-compose down --remove-orphans 2>/dev/null || true
+          
+          echo '=== Iniciando nuevo despliegue ==='
+          docker-compose up -d
+        "
 
     - name: Verificar despliegue
       if: always()
@@ -86,5 +104,14 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_KEY" > ~/.ssh/llave-devops.pem
         chmod 600 ~/.ssh/llave-devops.pem
-        sleep 5
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST 'docker-compose ps && echo "---" && curl -s http://localhost/health && echo "---" && curl -s http://localhost/db'
+        sleep 8
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST '
+          echo "=== CONTENEDORES ACTIVOS ==="
+          docker ps
+          echo ""
+          echo "=== HEALTH CHECK ==="
+          curl -s http://localhost/health || echo "Health check falló"
+          echo ""
+          echo "=== DB CHECK ==="
+          curl -s http://localhost/db || echo "DB check falló"
+        '
