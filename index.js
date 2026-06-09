@@ -1,4 +1,5 @@
 import express from 'express';
+import { MongoClient } from 'mongodb';
 import { calcularPromedio, obtenerEstado } from './app.js';
 
 const app = express();
@@ -242,6 +243,24 @@ app.get('/health', (req, res) => {
         version: '1.0.0',
         timestamp: new Date().toISOString(),
     });
+});
+
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017';
+app.get('/db', async (req, res) => {
+    try {
+        const client = new MongoClient(MONGO_URI);
+        await client.connect();
+        const db = client.db('calculadora');
+        const collections = await db.listCollections().toArray();
+        await client.close();
+        res.json({
+            status: 'conectado a MongoDB',
+            base: 'calculadora',
+            colecciones: collections.map(c => c.name)
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Error de conexión a MongoDB', detalle: error.message });
+    }
 });
 
 // Endpoint de cálculo usando tu lógica de app.js

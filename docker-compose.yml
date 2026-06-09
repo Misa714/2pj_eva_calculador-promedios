@@ -1,22 +1,22 @@
 version: '3.8'
 
 services:
-  # Contenedor 1: Tu aplicación Node.js
   app:
     build: .
-    container_name: calculadora_app
-    restart: always
     ports:
-      - "80:3000" # Exponemos el puerto 80 (Web estándar) apuntando al 3000 de tu app
-    depends_on:
-      - db
+      - "80:3000"
     environment:
+      - MONGO_URI=mongodb://mongo:27017
       - NODE_ENV=production
+    depends_on:
+      - mongo
+    restart: unless-stopped
 
-  # Contenedor 2: Base de datos (Requisito de la rúbrica)
-  db:
-    image: redis:alpine
-    container_name: calculadora_db
-    restart: always
-    ports:
-      - "6379:6379"
+  mongo:
+    image: mongo:6
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
