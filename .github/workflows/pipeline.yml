@@ -7,10 +7,10 @@ on:
     branches: [ main, master ]
 
 jobs:
-  build-and-test:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout del codigo
+      - name: Checkout del código
         uses: actions/checkout@v4
 
       - name: Instalar Node.js
@@ -21,14 +21,28 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
-      - name: Auditoria de Seguridad (DevSecOps)
+      - name: Auditoría de Seguridad (DevSecOps)
         run: npm audit --audit-level=high
 
-      - name: Validar codigo (Lint)
+      - name: Validar código (Lint)
         run: npx eslint .
 
       - name: Ejecutar Pruebas (Jest)
         run: npm test
 
-      - name: Build de Imagen Docker (Requisito AWS)
+      - name: Build de Imagen Docker
         run: docker build -t calculador-app:latest .
+
+      - name: Desplegar en AWS EC2
+        if: github.event_name == 'push'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ 3.91.67.90 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/2pj_eva_calculador-promedios
+            git pull origin main
+            docker compose down
+            docker compose build --no-cache app
+            docker compose up -d
