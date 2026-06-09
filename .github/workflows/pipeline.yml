@@ -71,4 +71,18 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_KEY" > ~/.ssh/llave-devops.pem
         chmod 600 ~/.ssh/llave-devops.pem
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST 'echo "=== CONTAINERS ===" && docker ps -a && echo "=== APP LOGS ===" && docker logs app || echo "No se pudo obtener logs"'
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST '
+          echo "=== CONTAINERS ===" 
+          docker ps -a 
+          echo ""
+          echo "=== APP LOGS ===" 
+          docker logs app
+          echo ""
+          echo "=== ESPERANDO 5 SEGUNDOS ===" 
+          sleep 5
+          echo "=== CURL A LOCALHOST:3000 ===" 
+          curl -v http://localhost:3000 || true
+          echo ""
+          echo "=== CURL A LOCALHOST:80 ===" 
+          curl -v http://localhost:80 || true
+        '
