@@ -26,4 +26,4 @@ EXPOSE 3000
 
 ENTRYPOINT ["/sbin/tini", "--"]
 
-CMD ["node", "app.js"]
+CMD ["node", "index.js"]
