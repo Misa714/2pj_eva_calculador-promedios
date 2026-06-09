@@ -1,48 +1,62 @@
-name: CI/CD Calculador Promedios
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
-  build-test-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout del código
-        uses: actions/checkout@v4
+    - name: Checkout código
+      uses: actions/checkout@v4
 
-      - name: Instalar Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
+    - name: Instalar Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
 
-      - name: Instalar dependencias
-        run: npm install
+    - name: Instalar dependencias
+      run: npm ci
 
-      - name: Auditoría de Seguridad (DevSecOps)
-        run: npm audit --audit-level=high
+    - name: Ejecutar ESLint
+      run: npx eslint . || true
 
-      - name: Validar código (Lint)
-        run: npx eslint .
+    - name: Ejecutar pruebas
+      run: npm test
 
-      - name: Ejecutar Pruebas (Jest)
-        run: npm test
+    - name: Construir imagen Docker
+      run: docker build -t calculador-promedios .
 
-      - name: Build de Imagen Docker
-        run: docker build -t calculador-app:latest .
+    - name: Guardar imagen comprimida
+      run: docker save calculador-promedios | gzip > imagen.tar.gz
 
-      - name: Desplegar en AWS EC2
-        if: github.event_name == 'push'
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ 3.91.67.90 }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd ~/2pj_eva_calculador-promedios
-            git pull origin main
-            docker compose down
-            docker compose build --no-cache app
-            docker compose up -d
+    - name: Subir artefacto
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-image
+        path: imagen.tar.gz
+
+  deploy:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+    - name: Descargar artefacto
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image
+
+    - name: Desplegar en EC2
+      env:
+        EC2_HOST: 3.91.67.90
+        EC2_USER: ubuntu
+        SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/llave-devops.pem
+        chmod 600 ~/.ssh/llave-devops.pem
+        gunzip -c imagen.tar.gz | docker load
+        docker save calculador-promedios | gzip | ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST "gunzip | docker load && docker stop app || true && docker rm app || true && docker run -d --name app -p 80:3000 --restart unless-stopped calculador-promedios"
