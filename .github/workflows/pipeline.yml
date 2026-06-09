@@ -1,9 +1,13 @@
-name: CI Calculador Promedios
+name: CI/CD Calculador Promedios
 
-on: [push]
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del codigo
@@ -18,14 +22,13 @@ jobs:
         run: npm install
 
       - name: Auditoria de Seguridad (DevSecOps)
-        # Este comando devolvera un error si encuentra vulnerabilidades High
         run: npm audit --audit-level=high
 
       - name: Validar codigo (Lint)
         run: npx eslint .
 
-      - name: Ejecutar Pruebas
+      - name: Ejecutar Pruebas (Jest)
         run: npm test
 
-      - name: Despliegue
-        run: echo "Despliegue de Promedios Seguro y Exitoso"
+      - name: Build de Imagen Docker (Requisito AWS)
+        run: docker build -t calculador-app:latest .

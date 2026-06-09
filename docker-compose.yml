@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # Contenedor 1: Tu aplicación Node.js
+  app:
+    build: .
+    container_name: calculadora_app
+    restart: always
+    ports:
+      - "80:3000" # Exponemos el puerto 80 (Web estándar) apuntando al 3000 de tu app
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=production
+
+  # Contenedor 2: Base de datos (Requisito de la rúbrica)
+  db:
+    image: redis:alpine
+    container_name: calculadora_db
+    restart: always
+    ports:
+      - "6379:6379"
