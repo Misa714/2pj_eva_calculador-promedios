@@ -61,7 +61,7 @@ jobs:
         gunzip -c imagen.tar.gz | docker load
         docker save calculador-promedios | gzip | ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST "gunzip | docker load && docker stop app || true && docker rm app || true && docker run -d --name app -p 80:3000 --restart unless-stopped calculador-promedios"
 
-    - name: Verificar estado del contenedor
+    - name: Verificar despliegue
       if: always()
       env:
         EC2_HOST: 54.227.139.149
@@ -71,18 +71,5 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_KEY" > ~/.ssh/llave-devops.pem
         chmod 600 ~/.ssh/llave-devops.pem
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST '
-          echo "=== CONTAINERS ===" 
-          docker ps -a 
-          echo ""
-          echo "=== APP LOGS ===" 
-          docker logs app
-          echo ""
-          echo "=== ESPERANDO 5 SEGUNDOS ===" 
-          sleep 5
-          echo "=== CURL A LOCALHOST:3000 ===" 
-          curl -v http://localhost:3000 || true
-          echo ""
-          echo "=== CURL A LOCALHOST:80 ===" 
-          curl -v http://localhost:80 || true
-        '
+        sleep 3
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/llave-devops.pem $EC2_USER@$EC2_HOST 'docker ps --filter name=app && echo "---" && curl -s http://localhost:80/health'
