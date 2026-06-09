@@ -20,4 +20,4 @@ export function obtenerEstado(promedio, aplicarExigencia, nivelExigencia = 60) {
         return "REPROBADO (Exigencia aplicada: " + nivelExigencia + "%)";
     }
 }
-//hola
+//h
