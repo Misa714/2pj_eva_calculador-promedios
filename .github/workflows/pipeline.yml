@@ -21,7 +21,7 @@ jobs:
       run: npm ci
 
     - name: Ejecutar ESLint
-      run: npx eslint . || true
+      run: npx eslint .
 
     - name: Ejecutar pruebas
       run: npm test
